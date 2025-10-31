@@ -12,44 +12,31 @@ REPORTS_DIR = "reports"
 os.makedirs(REPORTS_DIR, exist_ok=True)
 REPORT_PATH = os.path.join(REPORTS_DIR, f"dining_report_{TODAY}.csv")
 
-# --- Helper function to load or create dataframe ---
-def load_boarder_list():
-    if os.path.exists(REPORT_PATH):
-        df = pd.read_csv(REPORT_PATH)
-    else:
-        df = pd.DataFrame(columns=["Boarder_Number", "Eaten"])
-    return df
-
-# --- Initialize session state ---
-if "boarder_df" not in st.session_state:
-    st.session_state.boarder_df = load_boarder_list()
-
-boarder_df = st.session_state.boarder_df
-
 # --- Load or Upload Boarder List ---
 st.header("1️⃣ Load / Upload Boarder List")
 
-st.success(f"Loaded report for {TODAY} ({len(boarder_df)} entries).")
+if os.path.exists(REPORT_PATH):
+    boarder_df = pd.read_csv(REPORT_PATH)
+    st.success(f"Loaded existing report for {TODAY} ({len(boarder_df)} entries).")
+else:
+    uploaded_file = st.file_uploader("Upload today's list (CSV or Excel)", type=["csv", "xlsx"])
 
-# Option to upload a new CSV
-with st.expander("🔄 Upload New CSV File"):
-    uploaded_file = st.file_uploader("Upload new boarder list (CSV or Excel)", type=["csv", "xlsx"])
     if uploaded_file:
         if uploaded_file.name.endswith(".csv"):
-            new_df = pd.read_csv(uploaded_file)
+            boarder_df = pd.read_csv(uploaded_file)
         else:
-            new_df = pd.read_excel(uploaded_file)
+            boarder_df = pd.read_excel(uploaded_file)
 
-        new_df.columns = ["Boarder_Number"]
-        new_df["Eaten"] = False
+        # Standardize columns
+        boarder_df.columns = ["Boarder_Number"]
+        boarder_df["Eaten"] = False
+        boarder_df.to_csv(REPORT_PATH, index=False)
 
-        # Save new file
-        new_df.to_csv(REPORT_PATH, index=False)
-
-        # Update session and reload app
-        st.session_state.boarder_df = new_df
-        st.success(f"✅ New list saved for {TODAY} with {len(new_df)} entries.")
-        st.experimental_rerun()  # <-- reloads app instantly
+        st.session_state["uploaded"] = True
+        st.rerun()  # ✅ This is the new correct method
+    else:
+        st.info("Upload a boarder list to start.")
+        st.stop()
 
 # --- Attendance Marking ---
 st.header("2️⃣ Mark Attendance")
@@ -69,11 +56,10 @@ if st.button("Mark as Eaten"):
             if not not_eaten_indices.empty:
                 first_idx = not_eaten_indices[0]
                 boarder_df.at[first_idx, "Eaten"] = True
-                st.session_state.boarder_df = boarder_df
-                boarder_df.to_csv(REPORT_PATH, index=False)
                 st.success(f"Boarder {num} marked as eaten ✅")
+                boarder_df.to_csv(REPORT_PATH, index=False)
             else:
-                st.warning("All entries for this boarder have already been marked as eaten.")
+                st.warning("All entries for this boarder are already marked as eaten.")
     else:
         st.error("Please enter a valid number.")
 
