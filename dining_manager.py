@@ -18,25 +18,26 @@ if "boarder_df" not in st.session_state:
     else:
         st.session_state.boarder_df = pd.DataFrame(columns=["Boarder_Number", "Eaten"])
 
-boarder_df = st.session_state.boarder_df
-
 # --- Upload new CSV ---
 st.header("1️⃣ Load / Upload Boarder List")
 uploaded_file = st.file_uploader("Upload CSV or Excel", type=["csv", "xlsx"])
 if uploaded_file is not None:
     if uploaded_file.name.endswith(".csv"):
-        boarder_df = pd.read_csv(uploaded_file)
+        new_df = pd.read_csv(uploaded_file)
     else:
-        boarder_df = pd.read_excel(uploaded_file)
+        new_df = pd.read_excel(uploaded_file)
 
     # Standardize columns
-    boarder_df.columns = ["Boarder_Number"]
-    boarder_df["Eaten"] = False
+    new_df.columns = ["Boarder_Number"]
+    new_df["Eaten"] = False
 
     # Save and update session state
-    boarder_df.to_csv(REPORT_PATH, index=False)
-    st.session_state.boarder_df = boarder_df
-    st.success(f"✅ New list saved for {TODAY} with {len(boarder_df)} entries.")
+    new_df.to_csv(REPORT_PATH, index=False)
+    st.session_state.boarder_df = new_df
+    st.success(f"✅ New list saved for {TODAY} with {len(new_df)} entries.")
+
+# Assign from session_state
+boarder_df = st.session_state.boarder_df
 
 # --- Attendance Marking ---
 st.header("2️⃣ Mark Attendance")
