@@ -1,5 +1,5 @@
 # --- Attendance Marking ---
-st.header("2️⃣ Mark Attendance")
+st.header("Mark Attendance")
 
 boarder_input = st.text_input("Enter Boarder Number:")
 
