@@ -42,10 +42,14 @@ with st.expander("🔄 Upload New CSV File"):
 
         new_df.columns = ["Boarder_Number"]
         new_df["Eaten"] = False
-        st.session_state.boarder_df = new_df
+
+        # Save new file
         new_df.to_csv(REPORT_PATH, index=False)
+
+        # Update session and reload app
+        st.session_state.boarder_df = new_df
         st.success(f"✅ New list saved for {TODAY} with {len(new_df)} entries.")
-        st.stop()
+        st.experimental_rerun()  # <-- reloads app instantly
 
 # --- Attendance Marking ---
 st.header("2️⃣ Mark Attendance")
@@ -65,10 +69,9 @@ if st.button("Mark as Eaten"):
             if not not_eaten_indices.empty:
                 first_idx = not_eaten_indices[0]
                 boarder_df.at[first_idx, "Eaten"] = True
-                st.success(f"Boarder {num} marked as eaten ✅")
-                # Save and persist to session + CSV
                 st.session_state.boarder_df = boarder_df
                 boarder_df.to_csv(REPORT_PATH, index=False)
+                st.success(f"Boarder {num} marked as eaten ✅")
             else:
                 st.warning("All entries for this boarder have already been marked as eaten.")
     else:
