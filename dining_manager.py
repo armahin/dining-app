@@ -35,8 +35,9 @@ if uploaded_file is not None:
     new_df.to_csv(REPORT_PATH, index=False)
     st.session_state.boarder_df = new_df
     st.success(f"✅ New list saved for {TODAY} with {len(new_df)} entries.")
+    st.experimental_rerun()  # reload app immediately with new file
 
-# Assign from session_state
+# --- Use session_state DataFrame ---
 boarder_df = st.session_state.boarder_df
 
 # --- Attendance Marking ---
@@ -51,15 +52,12 @@ if st.button("Mark as Eaten"):
         if matches.empty:
             st.error("❌ Boarder not found in today's list.")
         else:
-            # Find first unmatched entry
             not_eaten_indices = matches[~matches["Eaten"]].index
             if len(not_eaten_indices) > 0:
                 idx = not_eaten_indices[0]
                 boarder_df.at[idx, "Eaten"] = True
-
-                # Save and update session state
-                boarder_df.to_csv(REPORT_PATH, index=False)
-                st.session_state.boarder_df = boarder_df
+                st.session_state.boarder_df = boarder_df  # persist in session
+                boarder_df.to_csv(REPORT_PATH, index=False)  # persist in file
                 st.success(f"✅ Boarder {num} marked as eaten.")
             else:
                 st.warning(f"⚠️ All entries for Boarder {num} are already marked as eaten.")
