@@ -34,6 +34,7 @@ with st.expander("🔄 Upload a New CSV for Today"):
         else:
             new_df = pd.read_excel(uploaded_file)
 
+        # Standardize columns
         new_df.columns = ["Boarder_Number"]
         new_df["Eaten"] = False
         new_df.to_csv(REPORT_PATH, index=False)
@@ -41,10 +42,13 @@ with st.expander("🔄 Upload a New CSV for Today"):
         # update session state
         st.session_state.boarder_df = new_df
         st.success(f"✅ New list saved for {TODAY} with {len(new_df)} entries.")
-        st.experimental_rerun()  # refresh to load new data
+
+        # Refresh the app to load new data
+        st.rerun()  # <- replaces deprecated experimental_rerun()
 
 # --- Attendance Marking ---
 st.header("2️⃣ Mark Attendance")
+
 boarder_input = st.text_input("Enter Boarder Number:")
 
 if st.button("Mark as Eaten"):
@@ -53,7 +57,7 @@ if st.button("Mark as Eaten"):
         matches = boarder_df[boarder_df["Boarder_Number"] == num]
 
         if matches.empty:
-            st.error("Boarder not found in today's list.")
+            st.error("❌ Chal Nikal Laure")
         else:
             not_eaten_indices = matches[~matches["Eaten"]].index
             if not not_eaten_indices.empty:
@@ -61,14 +65,15 @@ if st.button("Mark as Eaten"):
                 boarder_df.at[first_idx, "Eaten"] = True
                 st.session_state.boarder_df = boarder_df
                 boarder_df.to_csv(REPORT_PATH, index=False)
-                st.success(f"Boarder {num} marked as eaten ✅")
+                st.success(f"✅ Boarder {num} marked as eaten.")
             else:
-                st.warning("All entries for this boarder have already been marked as eaten.")
+                st.warning(f"⚠️ All entries for Boarder {num} are already marked as eaten.")
     else:
         st.error("Please enter a valid number.")
 
 # --- Summary ---
 st.header("3️⃣ Summary")
+
 total = len(boarder_df)
 eaten = boarder_df["Eaten"].sum()
 not_eaten = total - eaten
@@ -78,11 +83,12 @@ col1.metric("Total Entries", total)
 col2.metric("Eaten", eaten)
 col3.metric("Not Eaten", not_eaten)
 
-with st.expander("View Details"):
+with st.expander("📋 View Details"):
     st.dataframe(boarder_df)
 
 # --- Download Section ---
 st.header("4️⃣ Download / View Past Reports")
+
 csv = boarder_df.to_csv(index=False).encode('utf-8')
 st.download_button(
     label="📥 Download Today's CSV",
@@ -91,7 +97,7 @@ st.download_button(
     mime="text/csv",
 )
 
-st.write("### Past Reports")
+st.write("### 🗂️ Past Reports")
 files = sorted(os.listdir(REPORTS_DIR))
 for f in files:
     if f.endswith(".csv"):
