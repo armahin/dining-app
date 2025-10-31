@@ -26,25 +26,27 @@ boarder_df = st.session_state.boarder_df
 # --- Upload new file option ---
 st.header("1️⃣ Load / Upload Boarder List")
 
-with st.expander("🔄 Upload a New CSV for Today"):
-    uploaded_file = st.file_uploader("Upload CSV or Excel", type=["csv", "xlsx"])
-    if uploaded_file:
-        if uploaded_file.name.endswith(".csv"):
-            new_df = pd.read_csv(uploaded_file)
-        else:
-            new_df = pd.read_excel(uploaded_file)
+if "uploaded_file" not in st.session_state:
+    st.session_state.uploaded_file = None
 
-        # Standardize columns
-        new_df.columns = ["Boarder_Number"]
-        new_df["Eaten"] = False
-        new_df.to_csv(REPORT_PATH, index=False)
+uploaded_file = st.file_uploader("Upload CSV or Excel", type=["csv", "xlsx"])
 
-        # update session state
-        st.session_state.boarder_df = new_df
-        st.success(f"✅ New list saved for {TODAY} with {len(new_df)} entries.")
+if uploaded_file is not None:
+    st.session_state.uploaded_file = uploaded_file
 
-        # Refresh the app to load new data
-        st.rerun()  # <- replaces deprecated experimental_rerun()
+if st.session_state.uploaded_file is not None:
+    uploaded_file = st.session_state.uploaded_file
+    if uploaded_file.name.endswith(".csv"):
+        boarder_df = pd.read_csv(uploaded_file)
+    else:
+        boarder_df = pd.read_excel(uploaded_file)
+
+    boarder_df.columns = ["Boarder_Number"]
+    boarder_df["Eaten"] = False
+    boarder_df.to_csv(REPORT_PATH, index=False)
+
+    st.session_state.boarder_df = boarder_df
+    st.success(f"✅ New list saved for {TODAY} with {len(boarder_df)} entries.")
 
 # --- Attendance Marking ---
 st.header("2️⃣ Mark Attendance")
