@@ -50,7 +50,7 @@ if st.button("Mark as Eaten"):
         matches = boarder_df[boarder_df["Boarder_Number"] == num]
 
         if matches.empty:
-            st.error("❌ Boarder not found in today's list.")
+            st.error("❌ Chal Nikal Laure")
         else:
             not_eaten_indices = matches[~matches["Eaten"]].index
             if len(not_eaten_indices) > 0:
