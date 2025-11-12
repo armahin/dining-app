@@ -60,7 +60,7 @@ if st.button("Mark as Eaten"):
                 boarder_df.to_csv(REPORT_PATH, index=False)  # persist in file
                 st.success(f"✅ Boarder {num} marked as eaten.")
             else:
-                st.warning(f"⚠️ All entries for Boarder {num} are already marked as eaten.")
+                st.warning("Abrahi")
     else:
         st.error("Please enter a valid number.")
 
